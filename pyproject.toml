@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "post-bangumi"
+version = "0.1.0"
+description = ""
+authors = ["Impasse <i@uuz.io>"]
+readme = "README.md"
+packages = [{include = "post_bangumi"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.95.1"
+openai = "^0.27.6"
+python-dotenv = "^1.0.0"
+uvicorn = "^0.22.0"
+beautifulsoup4 = "^4.12.2"
+requests = "^2.29.0"
+loguru = "^0.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
