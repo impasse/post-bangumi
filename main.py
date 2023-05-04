@@ -1,9 +1,9 @@
 from src import extractor
 from src.models import PostDownloadModel
 from src.info import Mikan
-from src.utils import mkdirp
-from fastapi import FastAPI, Body
-from fastapi.responses import HTMLResponse
+from src.utils import mkdirp, read_log_file
+from fastapi import FastAPI, Body, Request, Response
+from fastapi.responses import HTMLResponse, StreamingResponse
 from loguru import logger
 import os
 import re
@@ -17,23 +17,24 @@ category_filter = re.compile(os.getenv('POST_BANGUMI_CATEGORY_FILTER', 'Bangumi'
 
 logger.add(log_path, backtrace=True, diagnose=True)
 
-@app.get('/log', response_class=HTMLResponse)
-def read_log():
-    if os.path.exists('stdout.log'):
-        with open(log_path, 'r') as f:
-            html = '<!DOCTYPE html><html><head><title>Log</title><body><ul style="list-style-type:none">'
-            for line in f:
-                html += f'<li>{line}</li>'
-            html += '</ul></body></html>'
-            return html
+
+@app.get('/log')
+def read_log(request: Request, response: Response):
+    if os.path.exists(log_path):
+        response.headers["Content-Type"] = "text/plain; charset=utf-8"
+        return StreamingResponse(read_log_file(log_path, request))
     else:
-        return 'Log not exists'
+        return HTMLResponse('Log not exists')
+
 
 @app.post('/api/post_download')
+@logger.catch
 def post_download(body: PostDownloadModel = Body()):
     logger.info('收到完成通知 {}', body)
     if not category_filter.fullmatch(body.category):
-        return { 'error': 'category not match' }
+        return {'error': 'category not match'}
+    if os.path.isdir(body.save_path):
+        return {'error': 'only independent video files are supported'}
     mikan_info = Mikan.get_info_by_torrent_id(body.torrent_id)
     logger.info('mikan info {}', mikan_info)
     episode_info = extractor.extract(mikan_info['episode-title'])
@@ -59,5 +60,10 @@ def extract_bangumi(body: dict = Body()):
     return extractor.extract(file_name)
 
 
+@app.get('/health')
+def health():
+    return 'healthy'
+
+
 if __name__ == '__main__':
-    uvicorn.run(app, port=8000)
+    uvicorn.run(app, port=8000, host='0.0.0.0')

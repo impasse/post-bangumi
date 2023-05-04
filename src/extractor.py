@@ -1,9 +1,10 @@
+from retry import retry
 import openai
 import json
 import re
 
-
 _re = re.compile(r'```(?:json)?\s*(.+)\s*```', re.DOTALL | re.MULTILINE)
+
 
 def _find_json(text: str):
     text = text.strip()
@@ -13,6 +14,8 @@ def _find_json(text: str):
         match = _re.findall(text)
         return match[0]
 
+
+@retry(tries=5)
 def extract(text: str):
     completion = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
