@@ -1,7 +1,6 @@
 from src import extractor
-from src.models import PostDownloadModel
-from src.info import Mikan
-from src.utils import mkdirp
+from src.models import PostDownloadModel, ExtractBangumiModel, ExtractEpisodeModel
+from src.utils import mkdirp, get_dest_path
 from fastapi import FastAPI, Body, WebSocket
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
@@ -19,12 +18,12 @@ category_filter = re.compile(os.getenv('POST_BANGUMI_CATEGORY_FILTER', 'Bangumi'
 
 logger.add(log_path, backtrace=True, diagnose=True, colorize=True)
 
-
 app.mount(
     '/log',
     StaticFiles(directory="ui", html=True),
-    name='static'
+    name='log'
 )
+
 
 @app.websocket('/api/log')
 async def websocket_endpoint(websocket: WebSocket):
@@ -46,18 +45,12 @@ def post_download(body: PostDownloadModel = Body()):
         return {'error': 'category not match'}
     if os.path.isdir(body.save_path):
         return {'error': 'only independent video files are supported'}
-    mikan_info = Mikan.get_info_by_torrent_id(body.torrent_id)
-    logger.info('mikan info {}', mikan_info)
-    search_title = ':'.join([mikan_info['title'], mikan_info['episode-title']])
-    episode_info = extractor.extract(search_title)
-    logger.info('episode info {}', episode_info)
-    title = episode_info.get('title') or episode_info.get['title_japanese'] or episode_info.get['title_english']
-    season = str(episode_info['season'])
-    episode = str(episode_info['episode_number'])
     ext = os.path.splitext(body.save_path)[1]
-    link_dir = os.path.join(base_path, title, f'Season {season}')
+    dest_path = get_dest_path(body.torrent_id)
+    logger.info('dest_path = {}', dest_path)
+    link_dir = os.path.join(base_path, dest_path.title, f'Season {dest_path.season}')
     mkdirp(link_dir)
-    link_path = os.path.join(link_dir, f"{title} S{season.rjust(2, '0')}E{episode.rjust(2, '0')}{ext}")
+    link_path = os.path.join(link_dir, f"{dest_path.title} S{dest_path.season}E{dest_path.episode}{ext}")
     if not os.path.exists(link_path):
         os.link(body.save_path, link_path)
         logger.info(f'Link "{body.save_path}" to "{link_path}"')
@@ -66,11 +59,20 @@ def post_download(body: PostDownloadModel = Body()):
     return {'error': '', 'save_path': body.save_path, 'link_path': link_path}
 
 
+@app.get('/api/get_dest_path')
+def get_dest_path_api(torrent_id: str):
+    return get_dest_path(torrent_id)
+
+
 @app.post('/api/extract_bangumi')
-def extract_bangumi(body: dict = Body()):
-    file_name = body['file_name']
-    info = extractor.extract(file_name)
-    logger.info('extract {} to {}', file_name, info)
+def extract_bangumi(body: ExtractBangumiModel = Body()):
+    info = extractor.extract_bangumi(body.title)
+    return info
+
+
+@app.post('/api/extract_episode')
+def extract_bangumi(body: ExtractEpisodeModel = Body()):
+    info = extractor.extract_episode(body.title)
     return info
 
 
