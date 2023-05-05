@@ -37,9 +37,10 @@ def post_download(body: PostDownloadModel = Body()):
         return {'error': 'only independent video files are supported'}
     mikan_info = Mikan.get_info_by_torrent_id(body.torrent_id)
     logger.info('mikan info {}', mikan_info)
-    episode_info = extractor.extract(mikan_info['episode-title'])
+    search_title = ':'.join([mikan_info['title'], mikan_info['episode-title']])
+    episode_info = extractor.extract(search_title)
     logger.info('episode info {}', episode_info)
-    title = mikan_info['title']
+    title = episode_info.get('title') or episode_info.get['title_japanese'] or episode_info.get['title_english']
     season = str(episode_info['season'])
     episode = str(episode_info['episode_number'])
     ext = os.path.splitext(body.save_path)[1]

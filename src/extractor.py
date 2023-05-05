@@ -21,7 +21,7 @@ def extract(text: str):
         model='gpt-3.5-turbo',
         messages=[
             {'role': 'system',
-             'content': '我需要你模仿一个番信息提取器，当我输入一个番文件名时，你需要使用 json 格式返回我 title, title_english, group, season, episode_number, resolution, format, language，如果没有 season 则返回 1, 除了 json 不要返回任何其他信息'},
+             'content': '我需要你模仿一个番信息提取器，当我输入一个番文件名时，你需要使用 json 格式返回我 title, title_english, title_japanese, group, season, episode_number, resolution, format, language，如果没有 season 则返回 1, season 和 episode_number 为数字, 除了 json 不要返回任何其他信息'},
             {'role': 'user', 'content': text}
         ]
     )
