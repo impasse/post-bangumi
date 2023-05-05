@@ -17,7 +17,7 @@ log_path = os.getenv("POST_BANGUMI_LOG_PATH", "stdout.log")
 base_path = os.getenv('POST_BANGUMI_BASE_PATH', "/mnt")
 category_filter = re.compile(os.getenv('POST_BANGUMI_CATEGORY_FILTER', 'Bangumi'))
 
-logger.add(log_path, backtrace=True, diagnose=True)
+logger.add(log_path, backtrace=True, diagnose=True, colorize=True)
 
 
 app.mount(
