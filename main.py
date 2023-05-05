@@ -1,13 +1,15 @@
 from src import extractor
 from src.models import PostDownloadModel
 from src.info import Mikan
-from src.utils import mkdirp, read_log_file
-from fastapi import FastAPI, Body, Request, Response
-from fastapi.responses import HTMLResponse, StreamingResponse
+from src.utils import mkdirp
+from fastapi import FastAPI, Body, WebSocket
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 import os
 import re
 import uvicorn
+import aiofiles
+import asyncio
 
 app = FastAPI()
 
@@ -18,13 +20,22 @@ category_filter = re.compile(os.getenv('POST_BANGUMI_CATEGORY_FILTER', 'Bangumi'
 logger.add(log_path, backtrace=True, diagnose=True)
 
 
-@app.get('/log')
-def read_log(request: Request, response: Response):
-    if os.path.exists(log_path):
-        response.headers["Content-Type"] = "text/plain; charset=utf-8"
-        return StreamingResponse(read_log_file(log_path, request))
-    else:
-        return HTMLResponse('Log not exists')
+app.mount(
+    '/log',
+    StaticFiles(directory="ui", html=True),
+    name='static'
+)
+
+@app.websocket('/api/log')
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    async with aiofiles.open(log_path, 'r') as f:
+        while True:
+            line = await f.readline()
+            if not line:
+                await asyncio.sleep(1)
+            else:
+                await websocket.send_text(line)
 
 
 @app.post('/api/post_download')

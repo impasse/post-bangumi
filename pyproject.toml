@@ -17,6 +17,7 @@ requests = "^2.30.0"
 loguru = "^0.7.0"
 retry2 = "^0.9.5"
 aiofiles = "^23.1.0"
+websockets = "^11.0.2"
 
 
 [build-system]
