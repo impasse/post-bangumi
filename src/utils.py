@@ -24,7 +24,7 @@ def get_dest_path(torrent_id: str):
     episode_info = extract_episode(mikan_info['episode-title'])
     title = bangumi_info['title']
     season = (bangumi_info['season_number'] and str(bangumi_info['season_number'])) or \
-             bangumi_info['season'] or \
-             str(episode_info['season'])
+             (episode_info['season'] and str(episode_info['season'])) or \
+             bangumi_info['season'] or '1'
     episode = str(episode_info['episode_number'])
     return DestPath(title, season, episode)

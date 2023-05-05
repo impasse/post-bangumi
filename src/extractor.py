@@ -40,7 +40,7 @@ def extract_episode(text: str):
         model='gpt-4',
         messages=[
             {'role': 'system',
-             'content': '我需要你模仿一个番信息提取器，当我输入一个番名时，你需要使用 json 格式返回我 title, season, episode_number, resolution, format, language (如果没有 season 则返回 1, season 和 episode_number 为数字, 除了 json 不要返回任何其他信息)'},
+             'content': '我需要你模仿一个番信息提取器，当我输入一个番名时，你需要使用 json 格式返回我 title, season, episode_number, resolution, format, language (如果没有 season 则返回 0, season 和 episode_number 为数字, 除了 json 不要返回任何其他信息)'},
             {'role': 'user', 'content': text}
         ]
     )
