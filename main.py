@@ -69,7 +69,9 @@ def post_download(body: PostDownloadModel = Body()):
 @app.post('/api/extract_bangumi')
 def extract_bangumi(body: dict = Body()):
     file_name = body['file_name']
-    return extractor.extract(file_name)
+    info = extractor.extract(file_name)
+    logger.info('extract {} to {}', file_name, info)
+    return info
 
 
 @app.get('/health')
