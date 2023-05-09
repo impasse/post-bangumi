@@ -6,8 +6,7 @@ class PostDownloadModel(BaseModel):
     save_path: str
     torrent_id: str
 
-class ExtractBangumiModel(BaseModel):
-    title: str
 
-class ExtractEpisodeModel(BaseModel):
-    title: str
+class ExtractModel(BaseModel):
+    bangumi_title: str
+    episode_title: str

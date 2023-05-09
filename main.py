@@ -1,6 +1,7 @@
 from src import extractor
-from src.models import PostDownloadModel, ExtractBangumiModel, ExtractEpisodeModel
-from src.utils import mkdirp, get_dest_path
+from src.models import PostDownloadModel, ExtractModel
+from src.utils import mkdirp
+from src.info import Mikan
 from fastapi import FastAPI, Body, WebSocket
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
@@ -46,11 +47,11 @@ def post_download(body: PostDownloadModel = Body()):
     if os.path.isdir(body.save_path):
         return {'error': 'only independent video files are supported'}
     ext = os.path.splitext(body.save_path)[1]
-    dest_path = get_dest_path(body.torrent_id)
-    logger.info('dest_path = {}', dest_path)
-    link_dir = os.path.join(base_path, dest_path.title, f'Season {dest_path.season}')
+    episode_info = Mikan.get_info_by_torrent_id(body.torrent_id)
+    info = extractor.extract(episode_info.bangumi_title, episode_info.episode_title)
+    link_dir = os.path.join(base_path, info.title, info.season)
     mkdirp(link_dir)
-    link_path = os.path.join(link_dir, f"{dest_path.title} S{dest_path.season}E{dest_path.episode}{ext}")
+    link_path = os.path.join(link_dir, f'{link_dir}', f'{info.title} {info.episode}{ext}')
     if not os.path.exists(link_path):
         os.link(body.save_path, link_path)
         logger.info(f'Link "{body.save_path}" to "{link_path}"')
@@ -59,21 +60,16 @@ def post_download(body: PostDownloadModel = Body()):
     return {'error': '', 'save_path': body.save_path, 'link_path': link_path}
 
 
-@app.get('/api/get_dest_path')
-def get_dest_path_api(torrent_id: str):
-    return get_dest_path(torrent_id)
-
-
-@app.post('/api/extract_bangumi')
-def extract_bangumi(body: ExtractBangumiModel = Body()):
-    info = extractor.extract_bangumi(body.title)
+@app.post('/api/extract')
+def extract(body: ExtractModel = Body()):
+    info = extractor.extract(body.bangumi_title, body.episode_title)
     return info
 
 
-@app.post('/api/extract_episode')
-def extract_bangumi(body: ExtractEpisodeModel = Body()):
-    info = extractor.extract_episode(body.title)
-    return info
+@app.get('/api/extract_bangumi')
+def extract_bangumi(torrent_id: str):
+    info = Mikan.get_info_by_torrent_id(torrent_id)
+    return extractor.extract(info.bangumi_title, info.episode_title)
 
 
 @app.get('/health')

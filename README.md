@@ -4,7 +4,7 @@
 
 ## 功能说明
 
-在 qbittorrent rss 自动下载完成后自动通过 ChatGPT 解析番剧信息，并 link 为 emby 支持的目录结构。
+在 qbittorrent rss 自动下载完成后自动<del>通过 ChatGPT 解析</del>番剧信息，并 link 为 emby 支持的目录结构。
 
 ## 使用说明
 
