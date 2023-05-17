@@ -2,3 +2,6 @@
 stdout.log
 .idea
 
+node_modules
+ui/dist
+yarn-error.log

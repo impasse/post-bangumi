@@ -21,7 +21,7 @@ logger.add(log_path, backtrace=True, diagnose=True, colorize=True)
 
 app.mount(
     '/log',
-    StaticFiles(directory="ui", html=True),
+    StaticFiles(directory="ui/dist", html=True),
     name='log'
 )
 

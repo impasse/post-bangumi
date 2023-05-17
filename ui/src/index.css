@@ -1,0 +1,10 @@
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.xterm {
+  padding: 12px;
+  min-height: 100%;
+}
