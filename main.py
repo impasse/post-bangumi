@@ -1,6 +1,6 @@
 from src import extractor
 from src.models import PostDownloadModel, ExtractModel
-from src.utils import mkdirp
+from src.utils import mkdirp, init_user_group
 from src.info import Mikan
 from fastapi import FastAPI, Body, WebSocket
 from fastapi.staticfiles import StaticFiles
@@ -10,6 +10,8 @@ import re
 import uvicorn
 import aiofiles
 import asyncio
+
+init_user_group()
 
 app = FastAPI()
 
